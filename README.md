@@ -25,8 +25,8 @@ This library, heaptracker, seeks to answer the above questions
 and some more.
 
 It is based on intercepting the heap APIs, i.e. the calls to
-heap memory allocation (malloc, calloc, realloc) and
-heap memory deallocation (free).
+heap memory allocation (`malloc`, `calloc`, `realloc`) and
+heap memory deallocation (`free`).
 
 It supports two approaches of interception.
 The first approach is to LD_PRELOAD a heaptracker
@@ -128,19 +128,19 @@ The timeseries data can be analyzed offline using a heaptracker
 tool to create a final report of the events that happened during
 the data collection interval.
 
-  $ src/heap_tracker_observer_timeseries_file_decoder_tool heap_tracker_observer_timeseries_file.output.txt
-  <snippet>
-  PointerToCallbackInfoMap: {
-  ptr = 0x1938000, alloc_cb_info = ptr = 0x1938000, size = 1000, timepoint = 1516839274264478 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
-  ptr = 0x1938400, alloc_cb_info = ptr = 0x1938400, size = 1000, timepoint = 1516839274264571 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
-  }
-  
-  Outstanding Report = {
-  bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
-  bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
-  }
-  
-  </snippet>
+    $ src/heap_tracker_observer_timeseries_file_decoder_tool heap_tracker_observer_timeseries_file.output.txt
+    <snippet>
+    PointerToCallbackInfoMap: {
+    ptr = 0x1938000, alloc_cb_info = ptr = 0x1938000, size = 1000, timepoint = 1516839274264478 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
+    ptr = 0x1938400, alloc_cb_info = ptr = 0x1938400, size = 1000, timepoint = 1516839274264571 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
+    }
+    
+    Outstanding Report = {
+    bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
+    bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
+    }
+    
+    </snippet>
 
 # Standard compliance
 
@@ -192,8 +192,8 @@ For each kind of interception, it tests two kinds of observers:
 # Coding style
 
 The coding style is based on Google style guide with minor
-changes, it is specified in the .clang-format. Run make_style.sh
-to format the code as per this style.
+changes, it is specified in the `.clang-format`.
+Run `make_style.sh` to format the code as per this style.
 
 # License
 
