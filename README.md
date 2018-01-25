@@ -72,32 +72,78 @@ through many pointers, those memory blocks may have
 pointers to more memory blocks and so on.
 
 # Examples
-
 ## Summary observer
+### Hello, World!
 
-HeapObserverSummary counts the number of allocations and deallocations.
-It does not track the time history.
-Here is an example with tcmalloc interception:
+The following steps build the library and analyzes
+an execution of the `/bin/echo` program.
 
-    $ test/heap_tracker_test2_observer_summary
+    build$ ../cmake_interposition.sh
+    build$ rm heap_tracker_observer_summary.output.txt
+    build$ LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /bin/echo "Hello, World!"
+    Hello, World!
+    build$ cat heap_tracker_observer_summary.output.txt
     SummaryStats = {
-      cumulative_alloc_count: 35,
-      cumulative_free_count: 33,
-      cumulative_alloc_bytes: 166726364,
-      cumulative_free_bytes: 166724364,
-      peak_outstanding_alloc_count: 35,
-      peak_outstanding_alloc_count_instant: 1969-12-31 16:00:00.000000,
-      peak_outstanding_alloc_bytes: 166726364,
-      peak_outstanding_alloc_bytes_instant: 1969-12-31 16:00:00.000000,
-      outstanding_alloc_count: 2,
-      outstanding_alloc_bytes: 2000,
+      cumulative_alloc_count: 31,
+      cumulative_free_count: 2,
+      cumulative_alloc_bytes: 4705,
+      cumulative_free_bytes: 1029,
+      peak_outstanding_alloc_count: 31,
+      peak_outstanding_alloc_count_instant: 2018-01-25 10:28:27.634027,
+      peak_outstanding_alloc_bytes: 4705,
+      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:28:27.634027,
+      outstanding_alloc_count: 29,
+      outstanding_alloc_bytes: 3676,
     }
 
-Among other things, it shows that during the time heap tracking was
-enabled, which in this case is the entire lifetime of the program,
-there are 2 outstanding allocations which sum up to 2000 bytes.
-Since allocation/deallocation time instants are not tracked,
-the output shows the default timestamps.
+The output conveys that at the time of exit, the `/bin/echo` program
+had 29 outstanding allocations which add up to 3676 bytes.
+The peak memory usage was 4705 bytes.
+
+### find
+
+    build$ rm heap_tracker_observer_summary.output.txt; LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /usr/bin/find /usr -type f -name 'stdio.h'
+    /usr/include/stdio.h
+    /usr/include/x86_64-linux-gnu/bits/stdio.h
+    /usr/include/c++/7/tr1/stdio.h
+    /usr/include/c++/5/tr1/stdio.h
+    /usr/include/c++/6/tr1/stdio.h
+    /usr/bin/find: ‘/usr/share/doc/google-chrome-stable’: Permission denied
+    build$ cat heap_tracker_observer_summary.output.txt
+    SummaryStats = {
+      cumulative_alloc_count: 712975,
+      cumulative_free_count: 712915,
+      cumulative_alloc_bytes: 1092592411,
+      cumulative_free_bytes: 1092581163,
+      peak_outstanding_alloc_count: 712975,
+      peak_outstanding_alloc_count_instant: 2018-01-25 10:49:08.979931,
+      peak_outstanding_alloc_bytes: 1092592411,
+      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:49:08.979931,
+      outstanding_alloc_count: 60,
+      outstanding_alloc_bytes: 11248,
+    }
+
+The output conveys that at the time of exit, the `/usr/bin/find` program
+had 60 outstanding allocations which add up to 11K bytes.
+The peak memory usage was 1G bytes!
+
+The results are (expectedly) different when the same program
+was run with different options.
+
+    build$ rm heap_tracker_observer_summary.output.txt; LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /usr/bin/find --help > /dev/null
+    build$ cat heap_tracker_observer_summary.output.txt
+    SummaryStats = {
+      cumulative_alloc_count: 65,
+      cumulative_free_count: 20,
+      cumulative_alloc_bytes: 18963,
+      cumulative_free_bytes: 10541,
+      peak_outstanding_alloc_count: 65,
+      peak_outstanding_alloc_count_instant: 2018-01-25 10:54:26.479630,
+      peak_outstanding_alloc_bytes: 18963,
+      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:54:26.479630,
+      outstanding_alloc_count: 45,
+      outstanding_alloc_bytes: 8422,
+    }
 
 ## Time-series observer
 
