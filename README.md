@@ -2,73 +2,199 @@
 
 This is a library to gain insight into the heap memory usage behavior.
 
-heaptracker is distributed under the terms of the BSD License.
+# The problem
 
-It consists of three main components:
-  - HeapTracker
-  - Heap Observer
-  - Heap Watcher
+One of the common quests for any C++ program is to understand its
+heap memory usage characteristics. Among them, perhaps the most
+common question is
 
-HeapTracker is the main class applications interact with. It offers APIs
-to enable and disable heap tracking. It also offers APIs to attach an
-observer.
+  - Is the program leaking memory?
 
-All the observers follow a specific interface as offered by
-AbstractHeapObserver. There can be different kind of observers based on
-what aspect of the heap needs to be tracked. The library offers the
-following observers out-of-the-box:
-  - SummaryStatsObserver
-  - CallStackStatsObserver
+Other common questions are:
 
-SummaryStatsObserver tracks the allocation and deallocation volume, the
-time instant when allocation hits peak etc. Here is an example output
-from test/heap_tracker_test1.cc
+  - What is the amount of memory allocated at this moment?
+    - (or, a specific moment)
+  - What was the peak of memory allocation?
+    - At what time did the peak happen?
+    - (peak in terms of number of allocation or number of bytes)
+  - What is the total memory allocated in the life time of the program?
 
-    $ test/heap_tracker_test1
-    SummaryStats = {
-      cumulative_alloc_count: 35,
-      cumulative_free_count: 33,
-      cumulative_alloc_bytes: 166726292,
-      cumulative_free_bytes: 166724292,
-      peak_outstanding_alloc_count: 35,
-      peak_outstanding_alloc_count_instant: 2017-06-03 11:25:58.269747,
-      peak_outstanding_alloc_bytes: 166726292,
-      peak_outstanding_alloc_bytes_instant: 2017-06-03 11:25:58.269747,
-      outstanding_alloc_count: 2,
-      outstanding_alloc_bytes: 2000,
-    }
+# The solution
+
+This library, heaptracker, seeks to answer the above questions
+and many more.
+
+It is based on intercepting the heap APIs, i.e. the calls to
+heap memory allocation (malloc, calloc, realloc) and
+heap memory deallocation (free).
+
+It supports two approaches of interception.
+The first approach is to use LD_PRELOAD a heaptracker
+shared library that intercepts the calls to the heap APIs.
+This can be used for any binary without requiring
+any source code modification.
+The second approach is for those applications that
+uses tcmalloc for memory management.
+tcmalloc offers some "hook" APIs to subscribe to and "listen"
+to the heap API calls that heaptracker uses.
+
+With the shared library based interception, the analysis is active
+for the entire lifetime of the application.
+tcmalloc based interception offers that too.
+In addition, in tcmalloc based applications, heaptracker offers
+programatic control to activate analysis selectively.
+
+heaptracker allows the application to perform different kind
+of analysis with different kinds of complexities.
+For example, one application may want to track the number of
+outstanding allocations and the number of outstanding bytes
+while another application may want to track the history of
+each allocation and deallocation.
+To facilitate such differing needs, heaptracker offers a
+mechansim to let an application specify what exactly it wants
+to be tracked.
+
+The data obtained from tracking is given back to the application
+by heaptracker using an observer interface.
+An application is allowed to roll in a custom concrete observer
+based on its analysis goals.
+As examples, the library provides two ready-to-use observers.
+
+As an aside, the library has the following interesting usage.
+When heaptracker is used in programatic control mode
+(currently with tcmalloc), it can be used to measure the
+heap memory footprint of an object in a generic way.
+This in general is non-trivial
+-- think for example a map or a unordered_map object --
+since an object may consume multiple memory blocks
+through many pointers, those memory blocks may have
+pointers to more memory blocks and so on.
+
+# Examples
+
+## Summary observer
+
+HeapObserverSummary counts the number of allocations and dellocations.
+It does not track the time history.
+Here is an example with tcmalloc interception:
+
+  $ test/heap_tracker_test2_observer_summary
+  SummaryStats = {
+    cumulative_alloc_count: 35,
+    cumulative_free_count: 33,
+    cumulative_alloc_bytes: 166726364,
+    cumulative_free_bytes: 166724364,
+    peak_outstanding_alloc_count: 35,
+    peak_outstanding_alloc_count_instant: 1969-12-31 16:00:00.000000,
+    peak_outstanding_alloc_bytes: 166726364,
+    peak_outstanding_alloc_bytes_instant: 1969-12-31 16:00:00.000000,
+    outstanding_alloc_count: 2,
+    outstanding_alloc_bytes: 2000,
+  }
 
 Along other things, it shows that, during the time heap tracking was
-enabled, there are 2 outstanding allocations which sum up to 2000 bytes.
+enabled, which in this case is the entire lifetime of the program,
+there are 2 outstanding allocations which sum up to 2000 bytes.
+Since allocation/deallocation time instants are not tracked,
+the output shows the default timestamps.
 
-CallStackStatsObserver tracks the callstacks of the live allocations. At 
-the end, it reports the outstanding allocations with the corresponding
-callstack. Here is an example output from test/heap_tracker_test2.cc
+## Time-series observer
 
-    bytes = 2000, count = 2, callstack = {0x41CB14 0x41CAF9 0x41CAE9 0x420FD3 0x7F9E8E9E5830 0x41CA09 } 
-    bytes = 1000, count = 1, callstack = {0x41CB14 0x420FA8 0x7F9E8E9E5830 0x41CA09 } 
-    bytes = 1000, count = 1, callstack = {0x41CB14 0x41CAF9 0x41CAE9 0x420F9E 0x7F9E8E9E5830 0x41CA09 }
+HeapObserverTimeseriesFile tracks each allocation and deallocation
+along with the time instant when the event happened and the full
+callstack how the allocation happened.
 
-Heap Watcher is the mechanism to intercept the allocations and deallocations
-while heap tracking is active. At present, the only supported mechanism is
-tcmalloc. Few other mechanisms are in the roadmap.
+  $ test/heap_tracker_test_tcmalloc_timeseries_file
+  Observer Timeseries saved to file heap_tracker_observer_timeseries_file.output.txt
+  
+  two lines from heap_tracker_observer_timeseries_file.output.txt
+  A 0x192e0c0 24 1516839274280396 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40EA71 0x40E63F 0x40E03C 0x40D6AB 0x40CEB4 0x40C70C 0x40C14F 0x40BD3C 0x40B707 0x40B52A 0x7F105FA61830 0x40B469 } 
+  D 0x192e0c0 24 1516839274280459 
 
-# Tidbits
+The following table explains the above output.
 
-The library uses standard compliant and portable C++.
+  -----------------------------------------------------
+  Column  | Explanation
+  -----------------------------------------------------
+  1       | 'A' mean allocation, 'D' means deallocation
+  2       | the pointer allocated or deallocated
+  3       | the size of allocation or deallocation
+  4       | the timestamp, epoch in microseconds
+  5-      | the callstack
+  -----------------------------------------------------
 
-It is compiled with the following settings
+The timeseries data can be analyzed offline using a heaptracker
+tool to create a final report of the events that happened during
+the data collection interval.
 
-    -std=c++14 -pedantic
+  $ src/heap_tracker_observer_timeseries_file_decoder_tool heap_tracker_observer_timeseries_file.output.txt
+  <snippet>
+  PointerToCallbackInfoMap: {
+  ptr = 0x1938000, alloc_cb_info = ptr = 0x1938000, size = 1000, timepoint = 1516839274264478 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
+  ptr = 0x1938400, alloc_cb_info = ptr = 0x1938400, size = 1000, timepoint = 1516839274264571 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
+  }
+  
+  Outstanding Report = {
+  bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B525 0x7F105FA61830 0x40B469 } 
+  bytes = 1000, count = 1, callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
+  }
+  
+  </snippet>
 
-and the following warning flags
+# Standard compliance
+
+The library is compliant to the C++17 standard,
+it is compiled with the following flags
+
+    -std=c++17 -pedantic
+
+It is expected to be portable.
+
+Few other flags used are:
 
     -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align
     -Wunused -Woverloaded-virtual -Wconversion 
     -Werror
 
-It is tested to compile with clang++ 3.8 and g++ 6.2.
+# Build
+
+The project is tested to build with clang++ (version 5.0) and gcc (version 7.2).
+
+The following command builds tcmalloc based interception with gcc.
+
+  cd build
+  rm ./* -rf
+  ../cmake_tcmalloc.sh
+
+For interpsition based interception with gcc, replace the lst line with
+
+  ../cmake_interposition.sh
+
+For building and testing with clang use
+
+  ../build_test_clang.sh
+
+# Tests
+
+The following script builds everything with gcc and test them.
+
+    test/run_all_tests_for_all_interceptions.sh
+
+It tests two kinds of interceptions:
+  - Library call Interposition based
+  - tcmalloc based
+
+For each kind of interception, it tests two kinds of observers:
+  - Summary observer
+  - Timeseries observer (results saved to a text file)
+
+# Coding style
 
 The coding style is based on Google style guide with minor
 changes, it is specified in the .clang-format. Run make_style.sh
 to format the code as per this style.
+
+# License
+
+heaptracker is distributed under the terms of the BSD license,
+see the file 'LICENSE' for exact details.

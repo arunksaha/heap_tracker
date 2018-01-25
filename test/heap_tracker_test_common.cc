@@ -10,7 +10,7 @@ enum { ArrayLen = 1000 };
 int64_t num_leaked_bytes = 0;
 int64_t num_leaked_count = 0;
 
-static void
+void
 LeakyFunctionCaller() {
   LeakyFunction();
 }

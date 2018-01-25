@@ -1,0 +1,24 @@
+Summary Stats = {
+  cumulative_alloc_count: 35,
+  cumulative_free_count: 33,
+  cumulative_alloc_bytes: 166726364,
+  cumulative_free_bytes: 166724364,
+  peak_outstanding_alloc_count: 35,
+  peak_outstanding_alloc_count_instant: 2017-12-29 16:44:22.205609,
+  peak_outstanding_alloc_bytes: 166726364,
+  peak_outstanding_alloc_bytes_instant: 2017-12-29 16:44:22.205609,
+  outstanding_alloc_count: 2,
+  outstanding_alloc_bytes: 2000,
+}
+PointerToCallbackInfoMap: {
+ptr = 0x17862f0, alloc_cb_info = ptr = 0x17862f0, size = 1000, timepoint = 1514594662119875 callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B6C1 0x40B6CD 0x40B5B0 0x7FE4F263F830 0x40B4F9 } 
+ptr = 0x1786830, alloc_cb_info = ptr = 0x1786830, size = 1000, timepoint = 1514594662119956 callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B5B5 0x7FE4F263F830 0x40B4F9 } 
+}
+CallStackAggMap: {
+callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B5B5 0x7FE4F263F830 0x40B4F9 } ; bytes = 1000, count = 1
+callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B6C1 0x40B6CD 0x40B5B0 0x7FE4F263F830 0x40B4F9 } ; bytes = 1000, count = 1
+}
+Outstanding Report = {
+bytes = 1000, count = 1, callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B5B5 0x7FE4F263F830 0x40B4F9 } 
+bytes = 1000, count = 1, callstack = { 0x7FE4F2FB6475 0x7FE4F2FA7FE6 0x7FE4F2C90498 0x40B6DE 0x40B6C1 0x40B6CD 0x40B5B0 0x7FE4F263F830 0x40B4F9 } 
+}
