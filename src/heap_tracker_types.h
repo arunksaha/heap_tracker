@@ -253,6 +253,12 @@ OutstandingReport PrepareOutstandingReport(PointerToCallbackInfoMap const &);
 std::pair<SummaryStats, PointerToCallbackInfoMap> DecodeOfflineEntries(
   std::vector<OfflineEntry> const &);
 
+// Update 'summary_stats' and 'pointer_to_cbinfo_map' from 'entry'.
+void UpdateFromOfflineEntry(
+  OfflineEntry const & entry,
+  SummaryStats & summary_stats,
+  PointerToCallbackInfoMap & pointer_to_cbinfo_map);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Inline Definitions.
 

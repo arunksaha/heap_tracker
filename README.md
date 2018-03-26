@@ -80,7 +80,8 @@ an execution of the `/bin/echo` program.
 
     build$ ../cmake_interposition.sh
     build$ rm heap_tracker_observer_summary.output.txt
-    build$ LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /bin/echo "Hello, World!"
+    build$ LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so \
+      /bin/echo "Hello, World!"
     Hello, World!
     build$ cat heap_tracker_observer_summary.output.txt
     SummaryStats = {
@@ -88,21 +89,23 @@ an execution of the `/bin/echo` program.
       cumulative_free_count: 2,
       cumulative_alloc_bytes: 4705,
       cumulative_free_bytes: 1029,
-      peak_outstanding_alloc_count: 31,
-      peak_outstanding_alloc_count_instant: 2018-01-25 10:28:27.634027,
-      peak_outstanding_alloc_bytes: 4705,
-      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:28:27.634027,
+      peak_outstanding_alloc_count: 30,
+      peak_outstanding_alloc_count_instant: 2018-03-25 21:38:53.835147,
+      peak_outstanding_alloc_bytes: 4700,
+      peak_outstanding_alloc_bytes_instant: 2018-03-25 21:38:53.835147,
       outstanding_alloc_count: 29,
       outstanding_alloc_bytes: 3676,
     }
 
 The output conveys that at the time of exit, the `/bin/echo` program
 had 29 outstanding allocations which add up to 3676 bytes.
-The peak memory usage was 4705 bytes.
+The peak memory usage was 4700 bytes.
 
 ### find
 
-    build$ rm heap_tracker_observer_summary.output.txt; LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /usr/bin/find /usr -type f -name 'stdio.h'
+    build$ rm heap_tracker_observer_summary.output.txt; \
+      LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so \
+      /usr/bin/find /usr -type f -name 'stdio.h'
     /usr/include/stdio.h
     /usr/include/x86_64-linux-gnu/bits/stdio.h
     /usr/include/c++/7/tr1/stdio.h
@@ -111,39 +114,67 @@ The peak memory usage was 4705 bytes.
     /usr/bin/find: ‘/usr/share/doc/google-chrome-stable’: Permission denied
     build$ cat heap_tracker_observer_summary.output.txt
     SummaryStats = {
-      cumulative_alloc_count: 712975,
-      cumulative_free_count: 712915,
-      cumulative_alloc_bytes: 1092592411,
-      cumulative_free_bytes: 1092581163,
-      peak_outstanding_alloc_count: 712975,
-      peak_outstanding_alloc_count_instant: 2018-01-25 10:49:08.979931,
-      peak_outstanding_alloc_bytes: 1092592411,
-      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:49:08.979931,
+      cumulative_alloc_count: 567733,
+      cumulative_free_count: 567673,
+      cumulative_alloc_bytes: 956052314,
+      cumulative_free_bytes: 956041066,
+      peak_outstanding_alloc_count: 3640,
+      peak_outstanding_alloc_count_instant: 2018-03-25 21:41:28.551725,
+      peak_outstanding_alloc_bytes: 1121974,
+      peak_outstanding_alloc_bytes_instant: 2018-03-25 21:41:28.551725,
       outstanding_alloc_count: 60,
       outstanding_alloc_bytes: 11248,
     }
-
+    
 The output conveys that at the time of exit, the `/usr/bin/find` program
 had 60 outstanding allocations which add up to 11K bytes.
-The peak memory usage was 1G bytes!
+The peak memory usage was 1.1M bytes.
 
 The results are (expectedly) different when the same program
 was run with different options.
 
-    build$ rm heap_tracker_observer_summary.output.txt; LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so /usr/bin/find --help > /dev/null
+    build$ rm heap_tracker_observer_summary.output.txt; \
+      LD_PRELOAD=src/libheap_tracker_observer_summary_interposition.so \
+      /usr/bin/find --help > /dev/null
     build$ cat heap_tracker_observer_summary.output.txt
     SummaryStats = {
       cumulative_alloc_count: 65,
       cumulative_free_count: 20,
       cumulative_alloc_bytes: 18963,
       cumulative_free_bytes: 10541,
-      peak_outstanding_alloc_count: 65,
-      peak_outstanding_alloc_count_instant: 2018-01-25 10:54:26.479630,
-      peak_outstanding_alloc_bytes: 18963,
-      peak_outstanding_alloc_bytes_instant: 2018-01-25 10:54:26.479630,
+      peak_outstanding_alloc_count: 47,
+      peak_outstanding_alloc_count_instant: 2018-03-25 21:44:02.659133,
+      peak_outstanding_alloc_bytes: 12606,
+      peak_outstanding_alloc_bytes_instant: 2018-03-25 21:44:02.658810,
       outstanding_alloc_count: 45,
       outstanding_alloc_bytes: 8422,
     }
+
+### Controlled example (from unit test)
+
+HeapObserverSummary counts the number of allocations and dellocations.
+It does not track the time history.
+Here is an example with tcmalloc interception:
+
+    build$ test/heap_tracker_test2_observer_summary
+    SummaryStats = {
+      cumulative_alloc_count: 35,
+      cumulative_free_count: 33,
+      cumulative_alloc_bytes: 166726364,
+      cumulative_free_bytes: 166724364,
+      peak_outstanding_alloc_count: 20,
+      peak_outstanding_alloc_count_instant: 1969-12-31 16:00:00.000000,
+      peak_outstanding_alloc_bytes: 166726008,
+      peak_outstanding_alloc_bytes_instant: 1969-12-31 16:00:00.000000,
+      outstanding_alloc_count: 2,
+      outstanding_alloc_bytes: 2000,
+    }
+
+Along other things, it shows that, during the time heap tracking was
+enabled, which in this case is the entire lifetime of the program,
+there are 2 outstanding allocations which sum up to 2000 bytes.
+Since allocation/deallocation time instants are not tracked,
+the output shows the default timestamps.
 
 ## Time-series observer
 
@@ -151,7 +182,7 @@ HeapObserverTimeseriesFile tracks each allocation and deallocation
 along with the time instant when the event happened and the full
 callstack how the allocation happened.
 
-    $ test/heap_tracker_test_tcmalloc_timeseries_file
+    build$ test/heap_tracker_test_tcmalloc_timeseries_file
     Observer Timeseries saved to file heap_tracker_observer_timeseries_file.output.txt
     
     $ # two lines from heap_tracker_observer_timeseries_file.output.txt
@@ -174,7 +205,8 @@ The timeseries data can be analyzed offline using a heaptracker
 tool to create a final report of the events that happened during
 the data collection interval.
 
-    $ src/heap_tracker_observer_timeseries_file_decoder_tool heap_tracker_observer_timeseries_file.output.txt
+    build$ src/heap_tracker_observer_timeseries_file_decoder_tool \
+      heap_tracker_observer_timeseries_file.output.txt
     <snippet>
     PointerToCallbackInfoMap: {
     ptr = 0x1938000, alloc_cb_info = ptr = 0x1938000, size = 1000, timepoint = 1516839274264478 callstack = { 0x7F10606500E3 0x7F10606408F7 0x7F1060640721 0x7F10603D43B2 0x7F10603E1670 0x40B63A 0x40B61D 0x40B629 0x40B520 0x7F105FA61830 0x40B469 } 
@@ -187,6 +219,24 @@ the data collection interval.
     }
     
     </snippet>
+
+Note that the generated data can be large.
+(It actually depends on the memory management pattern
+-- the number of calls to allocation and deallocation --
+of the observed program; the data generated is proportional to the number of calls.)
+
+### Visualization
+
+Convert the captured data to the graph input format.
+
+    build$ src/heap_tracker_observer_timeseries_file_graph_input_tool \
+      ./heap_tracker_observer_timeseries_file.output.txt > \
+      ./heap_tracker_observer_timeseries_graph_input.txt
+
+Run the python plotting tool on the graph input file.
+
+    build$ python ../src/plot_timeseries_outstanding_bytes.py \
+      ./heap_tracker_observer_timeseries_graph_input.txt
 
 # Standard compliance
 
@@ -221,11 +271,81 @@ For building and testing with clang use
 
     ../build_test_clang.sh
 
+# A complete example
+
+Build interposition libraries and tools.
+
+    cd build
+    rm ./* -rf
+    ../cmake_interposition.sh
+
+Remove previous data files, if any.
+
+    build$ rm ./heap_tracker_observer_timeseries_file.output.txt \
+      ./heap_tracker_observer_timeseries_graph_input.txt
+
+Using LD_PRELOAD, run interposition based analysis on the Linux "find" command.
+
+    build$ date; LD_PRELOAD=src/libheap_tracker_observer_timeseries_file_interposition.so \
+      /usr/bin/find /usr -type f -name 'string.h'; date
+    Sun Mar 25 20:28:32 PDT 2018
+    <lot of */string.h file names, omitted here for brevity>
+    Sun Mar 25 20:28:38 PDT 2018
+
+Check output file generation.
+
+    build$ ls -l heap_tracker_observer_timeseries_file.output.txt
+
+Decode the output.
+
+    build$ src/heap_tracker_observer_timeseries_file_decoder_tool \
+      heap_tracker_observer_timeseries_file.output.txt
+    Summary Stats = {
+      cumulative_alloc_count: 567681,
+      cumulative_free_count: 567621,
+      cumulative_alloc_bytes: 955915203,
+      cumulative_free_bytes: 955903955,
+      peak_outstanding_alloc_count: 3639,
+      peak_outstanding_alloc_count_instant: 2018-03-25 20:28:33.235570,
+      peak_outstanding_alloc_bytes: 1121702,
+      peak_outstanding_alloc_bytes_instant: 2018-03-25 20:28:33.235570,
+      outstanding_alloc_count: 60,
+      outstanding_alloc_bytes: 11248,
+    }
+    <lot more data, omitted here for brevity>
+    Outstanding Report = {
+    <omitted here for brevity>
+    }
+
+At the time the program /usr/bin/find exited, 11248 bytes were still allocated through 60 allocations.
+
+Use the generated data to prepare input data for plotting.
+
+    build$ src/heap_tracker_observer_timeseries_file_graph_input_tool \
+      ./heap_tracker_observer_timeseries_file.output.txt > \
+      ./heap_tracker_observer_timeseries_graph_input.txt
+
+Plot the data.
+
+    build$ python ../src/plot_timeseries_outstanding_bytes.py \
+      ./heap_tracker_observer_timeseries_graph_input.txt
+
+The generated plot looks like the following.
+![Alt text](misc/find_outstanding_byte_time_series_plot.png)
+During the 6 seconds when the program (`/usr/bin/find`) ran,
+it did `567681` allocations and `567621` deallocations, the outstanding
+memory fluctuated a lot.
+Observe that the peak outstanding bytes as reported by
+the summary stats (`1121702` bytes at `2018-03-25 20:28:33.235570`)
+matches with the peak in the plot.
+
 # Tests
 
 The following script builds everything with gcc and test them.
 
     test/run_all_tests_for_all_interceptions.sh
+
+    build$ bash ../test/run_all_tests_for_all_interceptions.sh
 
 It tests two kinds of interceptions:
   - Library call Interposition based

@@ -22,6 +22,15 @@ target_link_libraries(heap_tracker_observer_timeseries_file_decoder_tool
 )
 
 ###############################################################################
+add_executable(heap_tracker_observer_timeseries_file_graph_input_tool
+  heap_tracker_observer_timeseries_file_graph_input_tool.cc
+)
+
+target_link_libraries(heap_tracker_observer_timeseries_file_graph_input_tool
+  heap_tracker_common
+)
+
+###############################################################################
 set(heap_tracker_observer_summary_sources_automatic
   heap_tracker_observer_summary.cc
   heap_tracker_observer_summary_automatic_setup.cc

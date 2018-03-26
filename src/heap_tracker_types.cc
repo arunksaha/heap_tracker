@@ -157,13 +157,15 @@ SummaryStats::OnAlloc(AllocCallbackInfo const & alloc_cb_info) {
   cumulative_alloc_count_ += 1;
   cumulative_alloc_bytes_ += alloc_cb_info.alloc_cb_size;
 
-  if (cumulative_alloc_count_ > peak_outstanding_alloc_count_) {
-    peak_outstanding_alloc_count_         = cumulative_alloc_count_;
+  auto const current_outstanding_alloc_count = OutstandingAllocCount();
+  if (current_outstanding_alloc_count > peak_outstanding_alloc_count_) {
+    peak_outstanding_alloc_count_         = current_outstanding_alloc_count;
     peak_outstanding_alloc_count_instant_ = alloc_cb_info.alloc_cb_timepoint;
   }
 
-  if (cumulative_alloc_bytes_ > peak_outstanding_alloc_bytes_) {
-    peak_outstanding_alloc_bytes_         = cumulative_alloc_bytes_;
+  auto const current_outstanding_alloc_bytes = OutstandingAllocBytes();
+  if (current_outstanding_alloc_bytes > peak_outstanding_alloc_bytes_) {
+    peak_outstanding_alloc_bytes_         = current_outstanding_alloc_bytes;
     peak_outstanding_alloc_bytes_instant_ = alloc_cb_info.alloc_cb_timepoint;
   }
 }
@@ -383,38 +385,47 @@ PrepareOutstandingReport(
 
 std::pair<SummaryStats, PointerToCallbackInfoMap>
 DecodeOfflineEntries(std::vector<OfflineEntry> const & offline_entry_vec) {
-  std::pair<SummaryStats, PointerToCallbackInfoMap> result;
-  auto & summary_stats         = result.first;
-  auto & pointer_to_cbinfo_map = result.second;
-
+  SummaryStats summary_stats;
+  PointerToCallbackInfoMap pointer_to_cbinfo_map;
   for (auto const & entry : offline_entry_vec) {
-    if (entry.offline_alloc) {
-      AllocCallbackInfo const alloc_cb_info{entry};
-      InsertIntoPointerToCallbackInfoMap(pointer_to_cbinfo_map,
-                                         entry.offline_ptr, alloc_cb_info);
-      summary_stats.OnAlloc(alloc_cb_info);
-    }
-    else {
-      PointerToCallbackInfoMapConstIter const cit =
-        FindInPointerToCallbackInfoMap(pointer_to_cbinfo_map,
-                                       entry.offline_ptr);
+    UpdateFromOfflineEntry(entry, summary_stats, pointer_to_cbinfo_map);
+  }
+  return {summary_stats, pointer_to_cbinfo_map};
+}
 
-      if (cit != pointer_to_cbinfo_map.cend()) {
-        AllocCallbackInfo const & alloc_cb_info = cit->second;
-        assert(cit->first == alloc_cb_info.alloc_cb_ptr);
+////////////////////////////////////////////////////////////////////////////////
 
-        FreeCallbackInfo free_cb_info;
-        free_cb_info.free_cb_ptr       = cit->first;
-        free_cb_info.free_cb_size      = alloc_cb_info.alloc_cb_size;
-        free_cb_info.free_cb_timepoint = entry.offline_timepoint;
+void
+UpdateFromOfflineEntry(
+  OfflineEntry const & entry,
+  SummaryStats & summary_stats,
+  PointerToCallbackInfoMap & pointer_to_cbinfo_map) {
 
-        EraseFromPointerToCallbackInfoMap(pointer_to_cbinfo_map, cit->first);
+  if (entry.offline_alloc) {
+    AllocCallbackInfo const alloc_cb_info{entry};
+    InsertIntoPointerToCallbackInfoMap(pointer_to_cbinfo_map,
+                                       entry.offline_ptr, alloc_cb_info);
+    summary_stats.OnAlloc(alloc_cb_info);
+  }
+  else {
+    PointerToCallbackInfoMapConstIter const cit =
+      FindInPointerToCallbackInfoMap(pointer_to_cbinfo_map,
+                                     entry.offline_ptr);
 
-        summary_stats.OnFree(free_cb_info);
-      }
+    if (cit != pointer_to_cbinfo_map.cend()) {
+      AllocCallbackInfo const & alloc_cb_info = cit->second;
+      assert(cit->first == alloc_cb_info.alloc_cb_ptr);
+
+      FreeCallbackInfo free_cb_info;
+      free_cb_info.free_cb_ptr       = cit->first;
+      free_cb_info.free_cb_size      = alloc_cb_info.alloc_cb_size;
+      free_cb_info.free_cb_timepoint = entry.offline_timepoint;
+
+      EraseFromPointerToCallbackInfoMap(pointer_to_cbinfo_map, cit->first);
+
+      summary_stats.OnFree(free_cb_info);
     }
   }
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
