@@ -23,6 +23,8 @@ else
   exit 1
 fi
 
+exit_status=0
+
 for f in ${TestFiles}; do
   printf "\nRunning ${f}...\n"
   bash ${TestDir}/${f}
@@ -32,6 +34,7 @@ for f in ${TestFiles}; do
     printf "    PASS\n"
   else
     printf "    FAIL\n"
+    exit_status=1
   fi
 done
 
@@ -44,6 +47,7 @@ run_binary() {
     printf "    PASS\n"
   else
     printf "    FAIL\n"
+    exit_status=1
   fi
 }
 
@@ -52,3 +56,5 @@ if [ "${InterceptOption}" == "tcmalloc" ]; then
   run_binary test/heap_tracker_test2_timeseries_file
   run_binary test/heap_tracker_test3_size
 fi
+
+exit ${exit_status}

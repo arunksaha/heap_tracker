@@ -13,6 +13,12 @@ LD_PRELOAD="${TestSo}" ${TestExe}
 
 expected_output_sans_instant=$(grep --invert-match instant --text ${ExpectedOutputFilename})
 actual_output_sans_instant=$(grep --invert-match instant --text ${SummaryOutputFilename})
-[ "${expected_output_sans_instant}" == "${actual_output_sans_instant}" ] || exit 1
+if [ "${expected_output_sans_instant}" != "${actual_output_sans_instant}" ]; then
+  printf "$0 expected:\n"
+  printf "${expected_output_sans_instant}\n"
+  printf "$0 actual:\n"
+  printf "${actual_output_sans_instant}\n"
+  exit 1
+fi
 
 exit 0

@@ -20,5 +20,4 @@ if [ "${expected_output_sans_instant}" != "${actual_output_sans_instant}" ]; the
   exit 1
 fi
 
-
 exit 0
