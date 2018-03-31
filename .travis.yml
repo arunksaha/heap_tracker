@@ -1,7 +1,11 @@
 language: cpp
+os: linux       # Jobs are on Linux unless specified otherwise
+dist: trusty    # Jobs are on Trusty unless specified otherwise
+sudo: false
 
 matrix:
   include:
+
     - os: linux
       addons:
         apt:
@@ -12,20 +16,32 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
-before_install:
-    - eval "${MATRIX_EVAL}"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
 install:
   - sudo apt-get install libgoogle-perftools-dev google-perftools
+  - which ${CXX}
+  - ${CXX} --version
+
+before_install:
+    - eval "${MATRIX_EVAL}"
 
 compiler:
   - gcc
 
 script:
-  - cd ${TRAVIS_BUILD_DIR}
   - uname -a
   - free -m
   - w
+  - cd ${TRAVIS_BUILD_DIR}
   - pwd
   - ls -l
   - mkdir build
