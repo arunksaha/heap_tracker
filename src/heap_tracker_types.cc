@@ -25,7 +25,7 @@ CallStack::operator==(CallStack const & rhs) const {
 bool
 CallStack::Empty() const {
   // Return true iff all elements are 0.
-  return std::all_of(std::cbegin(addresses), std::cend(addresses),
+  return std::all_of(addresses.cbegin(), addresses.cend(),
                      [](uint64_t addr) { return addr == 0; });
 }
 
