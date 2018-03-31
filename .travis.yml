@@ -15,6 +15,8 @@ matrix:
 before_install:
     - eval "${MATRIX_EVAL}"
 
+install:
+  - sudo apt-get install libgoogle-perftools-dev google-perftools
 
 compiler:
   - gcc
