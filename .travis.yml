@@ -26,24 +26,27 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
-install:
-  - sudo apt-get install libgoogle-perftools-dev google-perftools
-  - which ${CXX}
-  - ${CXX} --version
-
 before_install:
     - eval "${MATRIX_EVAL}"
 
-compiler:
-  - gcc
+install:
+  - sudo apt-get install libgoogle-perftools-dev google-perftools
 
 script:
-  - uname -a
-  - free -m
-  - w
-  - cd ${TRAVIS_BUILD_DIR}
-  - pwd
-  - ls -l
-  - mkdir build
-  - cd build
-  - bash ../test/run_all_tests_for_all_interceptions.sh
+  - |
+    echo ${CXX}
+    which ${CXX}
+    ${CXX} --version
+    uname -a
+    free -m
+    w
+    cd ${TRAVIS_BUILD_DIR}
+    pwd
+    ls -l
+    mkdir build
+    cd build
+    if [[ "${CXX}" =~ "clang++" ]]; then
+      bash ../test/build_test_clang.sh
+    else
+      bash ../test/run_all_tests_for_all_interceptions.sh
+    fi
