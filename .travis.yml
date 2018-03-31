@@ -6,7 +6,9 @@ compiler:
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
+  - w
   - pwd
   - ls -l
+  - mkdir build
   - cd build
   - bash ../test/run_all_tests_for_all_interceptions.sh
