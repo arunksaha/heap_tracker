@@ -5,6 +5,7 @@ compiler:
   - clang
 
 script:
+  - cd ${TRAVIS_BUILD_DIR}
   - cd build
   - rm ./* -rf
   - bash ../test/run_all_tests_for_all_interceptions.sh
