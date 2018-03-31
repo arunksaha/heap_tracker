@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/arunksaha/heap_tracker.svg?branch=master)](https://travis-ci.org/arunksaha/heap_tracker)
+
 # heaptracker: A customizable library for tracking heap activity
 
 This is a library to gain insight into the heap memory usage behavior.

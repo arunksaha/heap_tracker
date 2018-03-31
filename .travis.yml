@@ -23,6 +23,8 @@ compiler:
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
+  - uname -a
+  - free -m
   - w
   - pwd
   - ls -l
