@@ -31,11 +31,15 @@ before_install:
 
 install:
   - sudo apt-get install libgoogle-perftools-dev google-perftools
+  - sudo apt-get install -y gdb  # install gdb
+
+before_script:
+  - ulimit -c unlimited -S
 
 script:
   - echo ${CXX}
   - which ${CXX}
-  - ${CXX} --version
+  - ${CXX} --versio
   - uname -a
   - free -m
   - w
@@ -50,3 +54,10 @@ script:
     else
       bash ../test/run_all_tests_for_all_interceptions.sh
     fi
+
+after_failure:
+  - echo ${EXE}
+  - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+  - echo ${COREFILE}
+  - EXE="test/heap_tracker_test2_timeseries_file"            # hack
+  - if [[ -f "${COREFILE}" ]]; then gdb -c "${COREFILE}" ${EXE} -ex "thread apply all bt" -ex "set pagination 0" -batch; fi

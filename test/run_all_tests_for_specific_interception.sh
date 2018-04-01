@@ -26,7 +26,7 @@ fi
 exit_status=0
 
 for f in ${TestFiles}; do
-  printf "\nRunning ${f}...\n"
+  printf "\n$0: Running ${f}...\n"
   bash ${TestDir}/${f}
   rc=$?
   printf "${f} rc = ${rc}"
@@ -40,6 +40,8 @@ done
 
 run_binary() {
   Binary=$1
+  printf "\n$0: Running ${Binary}...\n"
+  export EXE=${Binary}
   ${Binary}
   rc=$?
   printf "${Binary} rc = ${rc}"
@@ -47,6 +49,7 @@ run_binary() {
     printf "    PASS\n"
   else
     printf "    FAIL\n"
+    ls -ltr
     exit_status=1
   fi
 }
