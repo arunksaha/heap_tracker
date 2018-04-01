@@ -3,11 +3,12 @@
 #include "heap_tracker_observer_timeseries_file.h"
 
 HeapObserverTimeseriesFile::HeapObserverTimeseriesFile(
-  HeapTrackOptions const heap_track_options, std::string const & filename)
+  HeapTrackOptions const heap_track_options, char const * const filename)
     : heap_track_options_{heap_track_options},
       filename_{filename},
       out_{filename_, std::ofstream::out | std::ofstream::trunc} {
   TRACE;
+  assert(filename_);
 }
 
 HeapObserverTimeseriesFile::~HeapObserverTimeseriesFile() {
@@ -16,8 +17,7 @@ HeapObserverTimeseriesFile::~HeapObserverTimeseriesFile() {
   out_.close();
 
   char buffer[256] = {};
-  snprintf(buffer, sizeof buffer, "Observer Timeseries saved to file %s\n",
-           filename_.c_str());
+  snprintf(buffer, sizeof buffer, "Observer Timeseries saved to file %s\n", filename_);
   write(STDOUT_FILENO, buffer, sizeof buffer);
 }
 

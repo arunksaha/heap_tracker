@@ -11,7 +11,7 @@
 class HeapObserverTimeseriesFile final : public AbstractObserver {
  public:
   HeapObserverTimeseriesFile(HeapTrackOptions heap_track_options,
-                             std::string const & filename);
+                             char const * const filename);
   ~HeapObserverTimeseriesFile();
   virtual HeapTrackOptions GetHeapTrackOptions() const override;
   virtual void OnAlloc(AllocCallbackInfo const & alloc_cb_info) override;
@@ -29,7 +29,7 @@ class HeapObserverTimeseriesFile final : public AbstractObserver {
  private:
   const HeapTrackOptions heap_track_options_;
   // Name of output file.
-  std::string const filename_;
+  char const * const filename_{nullptr};
   // Entries are buffered before flushed to the file.
   enum { kMaxBufferCount = 128 * 1024 };
   std::array<OfflineEntry, kMaxBufferCount> offline_entries_;

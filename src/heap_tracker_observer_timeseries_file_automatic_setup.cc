@@ -9,11 +9,11 @@
 // The following portion of the file is like a "driver",
 // it helps an application to use HeapObserverTimeseriesFile
 // in a off-the-shelf ready-to-use way. Essentially, it
-// creates few a static variables and therby initialize
+// creates few a static variables and thereby initialize
 // few data structures.
 
-static std::string const output_filename{
-  "heap_tracker_observer_timeseries_file.output.txt"};
+static char const * const output_filename =
+  "heap_tracker_observer_timeseries_file.output.txt";
 
 // Step 1: Create observer.
 static HeapObserverTimeseriesFile local_heap_observer{

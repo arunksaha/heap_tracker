@@ -42,8 +42,8 @@ MyHeapTrackTimeseriesFileOptions() {
   return options;
 }
 
-static std::string const output_filename{
-  "heap_tracker_observer_timeseries_file.output.txt"};
+static char const * const output_filename =
+  "heap_tracker_observer_timeseries_file.output.txt";
 #endif
 
 int
