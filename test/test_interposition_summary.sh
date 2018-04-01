@@ -14,13 +14,13 @@ set +x
 [ -f ${SummaryOutputFilename} ] || exit 1
 
 # In clang builds, the numbers are not exactly matching, so checking only few stats. REVISIT.
-expected_output_content=$(grep --text 'outstanding_alloc_count:\|outstanding_alloc_bytes:' ${ExpectedOutputFilename})
-actual_output_content=$(grep   --text 'outstanding_alloc_count:\|outstanding_alloc_bytes:' ${SummaryOutputFilename})
+expected_output_content=$(grep --text 'outstanding_alloc_count:\|outstanding_alloc_bytes:' ${ExpectedOutputFilename} | grep -v peak)
+actual_output_content=$(grep   --text 'outstanding_alloc_count:\|outstanding_alloc_bytes:' ${SummaryOutputFilename}  | grep -v peak)
 if [ "${expected_output_content}" != "${actual_output_content}" ]; then
   printf "$0 expected:\n"
-  printf "${ExpectedOutputFilename}\n"
+  cat ${ExpectedOutputFilename}
   printf "$0 actual:\n"
-  printf "${SummaryOutputFilename}\n"
+  cat ${SummaryOutputFilename}
   diff  <(echo "${expected_output_content}") <(echo "${actual_output_content}")
   exit 1
 fi

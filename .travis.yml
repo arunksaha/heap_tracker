@@ -39,7 +39,7 @@ before_script:
 script:
   - echo ${CXX}
   - which ${CXX}
-  - ${CXX} --versio
+  - ${CXX} --version
   - uname -a
   - free -m
   - w
@@ -57,7 +57,10 @@ script:
 
 after_failure:
   - echo ${EXE}
-  - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+  - which gdb
+  - cd ${TRAVIS_BUILD_DIR}
+  - cd build
+  - COREFILE=$(find . -maxdepth 1 -name "core" | head -n 1) # find core file
   - echo ${COREFILE}
   - EXE="test/heap_tracker_test2_timeseries_file"            # hack
   - if [[ -f "${COREFILE}" ]]; then gdb -c "${COREFILE}" ${EXE} -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
