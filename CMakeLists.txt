@@ -25,11 +25,11 @@ endif ()
 option(BUILD_CLANG "Build with clang" OFF)
 
 if (BUILD_CLANG)
-  SET(CMAKE_CXX_COMPILER "/usr/bin/clang++-5.0")
+  SET(CMAKE_CXX_COMPILER "/usr/bin/clang++")
   message("Building with clang")
 else (BUILD_CLANG)
   # gcc is the default option.
-  SET(CMAKE_CXX_COMPILER "/usr/bin/g++-7")
+  SET(CMAKE_CXX_COMPILER "/usr/bin/g++")
   message("Building with gcc")
 endif (BUILD_CLANG)
 message("CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
