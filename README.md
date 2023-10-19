@@ -237,7 +237,7 @@ Convert the captured data to the graph input format.
 
 Run the python plotting tool on the graph input file.
 
-    build$ python ../src/plot_timeseries_outstanding_bytes.py \
+    build$ python3 ../src/plot_timeseries_outstanding_bytes.py \
       ./heap_tracker_observer_timeseries_graph_input.txt
 
 # Standard compliance
@@ -261,6 +261,7 @@ The project is tested to build with clang++ (version 5.0) and gcc (version 7.2).
 
 The following command builds tcmalloc based interception with gcc.
 
+    mkdir -p build
     cd build
     rm ./* -rf
     ../cmake_tcmalloc.sh
@@ -329,7 +330,7 @@ Use the generated data to prepare input data for plotting.
 
 Plot the data.
 
-    build$ python ../src/plot_timeseries_outstanding_bytes.py \
+    build$ python3 ../src/plot_timeseries_outstanding_bytes.py \
       ./heap_tracker_observer_timeseries_graph_input.txt
 
 The generated plot looks like the following.

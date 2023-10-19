@@ -21,22 +21,22 @@ endif ()
 
 ###############################################################################
 
-# As an option, clang can be used for building. If unspeficied, default is gcc.
+# As an option, clang can be used for building. If unspecified, default is gcc.
 option(BUILD_CLANG "Build with clang" OFF)
 
 if (BUILD_CLANG)
-  SET(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+  SET(CMAKE_CXX_COMPILER "clang++-17")
   message("Building with clang")
 else (BUILD_CLANG)
   # gcc is the default option.
-  SET(CMAKE_CXX_COMPILER "/usr/bin/g++")
+  SET(CMAKE_CXX_COMPILER "g++-12")
   message("Building with gcc")
 endif (BUILD_CLANG)
 message("CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 
 ###############################################################################
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")

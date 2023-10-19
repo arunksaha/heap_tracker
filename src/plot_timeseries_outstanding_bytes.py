@@ -83,6 +83,6 @@ def driver(dataFile):
 
 # main
 if len(sys.argv) == 1:
-  print "usage: {} <input-text-file>".format(sys.argv[0])
+  print("usage: {} <input-text-file>".format(sys.argv[0]))
   sys.exit(1)
 driver(sys.argv[1])

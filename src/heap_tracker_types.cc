@@ -114,7 +114,7 @@ TimePointToString(const TimePoint & timepoint) {
     std::chrono::duration_cast<std::chrono::microseconds>(
       timepoint.time_since_epoch());
   int64_t const usecs_part = usecs_since_epoch.count() % 1000000;
-  char usecs_buffer[7];
+  char usecs_buffer[8];
   snprintf(usecs_buffer, sizeof usecs_buffer, "%06ld", usecs_part);
   return std::string(buffer) + std::string(usecs_buffer);
 }
